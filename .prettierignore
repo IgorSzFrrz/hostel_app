@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+coverage
+.pnpm-store
+**/prisma/generated
+playwright-report
+test-results
+*.lock
+pnpm-lock.yaml
