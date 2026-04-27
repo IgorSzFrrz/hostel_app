@@ -61,7 +61,8 @@ export function HomePage() {
               <p className="mt-6 text-xl leading-8 text-white/90">{t("home.copy")}</p>
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
                 <Link
-                  to="/rooms"
+                  to="/booking"
+                  search={{ roomTypeId: undefined }}
                   className="inline-flex min-h-12 items-center justify-center rounded-lg bg-orange px-8 text-sm font-bold text-white shadow-lg shadow-black/20 transition hover:bg-orange-dark"
                 >
                   {t("home.primaryCta")}

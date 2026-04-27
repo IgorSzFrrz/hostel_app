@@ -1,4 +1,4 @@
-import type { RoomTypeResponse } from "@hostel/shared";
+import type { AvailabilityResponse, RoomTypeResponse } from "@hostel/shared";
 
 export type RoomTypesResponse = {
   roomTypes: RoomTypeResponse[];
@@ -37,4 +37,23 @@ export function getRoomTypes(locale: string) {
 
 export function getRoomType(slug: string, locale: string) {
   return apiFetch<RoomTypeResponse>(`/v1/room-types/${encodeURIComponent(slug)}`, locale);
+}
+
+export type AvailabilityParams = {
+  checkIn: string;
+  checkOut: string;
+  roomTypeId?: string;
+};
+
+export function getAvailability(params: AvailabilityParams, locale: string) {
+  const searchParams = new URLSearchParams({
+    checkIn: params.checkIn,
+    checkOut: params.checkOut,
+  });
+
+  if (params.roomTypeId) {
+    searchParams.set("roomTypeId", params.roomTypeId);
+  }
+
+  return apiFetch<AvailabilityResponse>(`/v1/availability?${searchParams.toString()}`, locale);
 }

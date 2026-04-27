@@ -93,7 +93,8 @@ export function RoomDetailPage({ slug }: RoomDetailPageProps) {
           </dl>
 
           <Link
-            to="/rooms"
+            to="/booking"
+            search={{ roomTypeId: roomType.id }}
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-clay px-5 py-3 text-sm font-semibold text-white transition hover:bg-clay-dark focus:outline-none focus:ring-2 focus:ring-clay/25"
           >
             <CalendarDays className="h-4 w-4" aria-hidden="true" />
