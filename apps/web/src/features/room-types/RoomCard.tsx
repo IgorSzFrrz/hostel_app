@@ -1,59 +1,103 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Users } from "lucide-react";
+import { Bath, Bed, BedDouble, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { RoomTypeResponse } from "@hostel/shared";
-import { formatBRL } from "../../lib/currencyFormat";
 
 type RoomCardProps = {
   roomType: RoomTypeResponse;
   priority?: boolean;
 };
 
+const roomMeta = {
+  single: {
+    icon: Bed,
+    accent: "text-[#5b7a43]",
+    iconBg: "bg-[#eef4e7]",
+    border: "border-[#8aa06f]",
+    specs: [
+      { key: "common.guest", count: 1 },
+      { key: "common.bed", count: 1 },
+      { key: "common.sharedBath" },
+    ],
+  },
+  double: {
+    icon: BedDouble,
+    accent: "text-orange",
+    iconBg: "bg-[#fff1df]",
+    border: "border-orange",
+    specs: [
+      { key: "common.guest", count: 2 },
+      { key: "common.bed", count: 1 },
+      { key: "common.privateBath" },
+    ],
+  },
+  group: {
+    icon: Users,
+    accent: "text-[#2d5b82]",
+    iconBg: "bg-[#e8f0f7]",
+    border: "border-[#7898b4]",
+    specs: [
+      { key: "common.guest", count: 4 },
+      { key: "common.bunkBed", count: 2 },
+      { key: "common.sharedBath" },
+    ],
+  },
+} as const;
+
+const specIcons = [Users, Bed, Bath];
+
 export function RoomCard({ roomType, priority = false }: RoomCardProps) {
-  const { i18n, t } = useTranslation();
+  const { t } = useTranslation();
   const image = roomType.photos[0] ?? "/rooms/double-01.png";
+  const meta = roomMeta[roomType.slug];
+  const Icon = meta.icon;
 
   return (
-    <article className="overflow-hidden rounded-md border border-ink/10 bg-paper shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article className="overflow-hidden rounded-xl bg-white shadow-[0_14px_34px_rgba(15,23,42,0.11)] transition hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(15,23,42,0.15)]">
       <Link to="/rooms/$slug" params={{ slug: roomType.slug }} className="block">
         <img
-          className="aspect-[4/3] w-full object-cover"
+          className="aspect-[1.42] w-full object-cover"
           src={image}
           alt={roomType.name}
           loading={priority ? "eager" : "lazy"}
         />
       </Link>
-      <div className="grid gap-4 p-5">
-        <div className="flex items-start justify-between gap-4">
+      <div className="grid gap-6 p-6">
+        <div className="grid grid-cols-[56px_1fr] gap-4">
+          <span className={`grid h-14 w-14 place-items-center rounded-full ${meta.iconBg}`}>
+            <Icon className={`h-7 w-7 ${meta.accent}`} aria-hidden="true" />
+          </span>
           <div>
-            <h2 className="font-display text-2xl font-semibold text-ink">{roomType.name}</h2>
-            <p className="mt-2 line-clamp-3 text-sm leading-6 text-ink/70">
+            <h2 className="text-xl font-extrabold text-black">{roomType.name}</h2>
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-black/70">
               {roomType.description}
             </p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1 text-sm text-teal-dark">
-            <Users className="h-4 w-4" aria-hidden="true" />
-            {roomType.capacity}
-          </span>
         </div>
 
-        <div className="flex items-end justify-between gap-3">
-          <p className="text-sm text-ink/65">
-            {t("common.from")}{" "}
-            <strong className="text-lg font-semibold text-ink">
-              {formatBRL(roomType.basePriceBRL, i18n.language)}
-            </strong>{" "}
-            {t("common.perNight")}
-          </p>
-          <Link
-            to="/rooms/$slug"
-            params={{ slug: roomType.slug }}
-            className="inline-flex items-center gap-2 rounded-md bg-teal px-3 py-2 text-sm font-semibold text-white transition hover:bg-teal-dark focus:outline-none focus:ring-2 focus:ring-teal/25"
-          >
-            {t("common.viewRoom")}
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
+        <div className="grid grid-cols-3 gap-2 text-xs font-medium text-black/70">
+          {meta.specs.map((spec, index) => {
+            const SpecIcon = specIcons[index] ?? Bed;
+
+            return (
+              <span
+                key={`${spec.key}-${index}`}
+                className="inline-flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <SpecIcon className="h-4 w-4 text-black/75" aria-hidden="true" />
+                {t(spec.key, "count" in spec ? { count: spec.count } : undefined)}
+              </span>
+            );
+          })}
         </div>
+
+        <Link
+          to="/rooms/$slug"
+          params={{ slug: roomType.slug }}
+          className={`inline-flex w-full items-center justify-center rounded-md border px-4 py-3 text-sm font-bold transition hover:bg-orange hover:text-white ${meta.border} ${meta.accent}`}
+        >
+          {t("common.viewRoom")}
+        </Link>
       </div>
     </article>
   );

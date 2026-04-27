@@ -22,6 +22,11 @@ const config: Config = {
           light: "#d8ab58",
           dark: "#926d2e",
         },
+        orange: {
+          DEFAULT: "#df7907",
+          dark: "#c86903",
+          soft: "#f6eadc",
+        },
       },
       fontFamily: {
         display: ['"Fraunces"', "ui-serif", "Georgia", "serif"],
