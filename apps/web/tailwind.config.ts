@@ -5,9 +5,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        surface: "#fafaf9",
-        ink: "#1c1917",
-        accent: "#b45309",
+        surface: "#f6f3ee",
+        paper: "#fffdf8",
+        ink: "#1f2933",
+        mist: "#dbe8e5",
+        teal: {
+          DEFAULT: "#2f6f68",
+          dark: "#245752",
+        },
+        clay: {
+          DEFAULT: "#a65f43",
+          dark: "#854c35",
+        },
+        gold: {
+          DEFAULT: "#c6943f",
+          light: "#d8ab58",
+          dark: "#926d2e",
+        },
       },
       fontFamily: {
         display: ['"Fraunces"', "ui-serif", "Georgia", "serif"],

@@ -17,7 +17,7 @@ const roomTypes = [
     },
     capacity: 1,
     basePriceBRL: "180.00",
-    photos: ["/rooms/single-01.webp", "/rooms/single-02.webp"],
+    photos: ["/rooms/single-01.png", "/rooms/single-02.png"],
     rooms: ["101", "102"],
   },
   {
@@ -34,7 +34,7 @@ const roomTypes = [
     },
     capacity: 2,
     basePriceBRL: "260.00",
-    photos: ["/rooms/double-01.webp", "/rooms/double-02.webp"],
+    photos: ["/rooms/double-01.png", "/rooms/double-02.png"],
     rooms: ["201", "202", "203"],
   },
   {
@@ -51,7 +51,7 @@ const roomTypes = [
     },
     capacity: 4,
     basePriceBRL: "420.00",
-    photos: ["/rooms/group-01.webp", "/rooms/group-02.webp"],
+    photos: ["/rooms/group-01.png", "/rooms/group-02.png"],
     rooms: ["301", "302"],
   },
 ];
