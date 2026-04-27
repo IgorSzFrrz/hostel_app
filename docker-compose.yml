@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hostel_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hostel
+      POSTGRES_PASSWORD: hostel
+      POSTGRES_DB: hostel
+    ports:
+      - "5432:5432"
+    volumes:
+      - hostel_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hostel -d hostel"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  hostel_pgdata:

@@ -8,7 +8,7 @@
 
 A guest-facing booking website for a single Inn / Bed & Breakfast / Hostel property. MVP delivers public-facing browse-and-reserve functionality; architecture is built so a future admin dashboard, online payments, and additional properties can be added without rework.
 
-This spec is the contract for the MVP. Anything labeled "future" is explicitly *not* in MVP scope but the design accommodates it.
+This spec is the contract for the MVP. Anything labeled "future" is explicitly _not_ in MVP scope but the design accommodates it.
 
 ### MVP feature set
 
@@ -213,16 +213,16 @@ Format: `HST-XXXXX` where `XXXXX` is 5 chars from a confusion-free alphabet (`23
 
 ## 5. Frontend Pages (Build Order)
 
-| # | Route | Purpose |
-|---|---|---|
-| 1 | `/` | Home — hero, value prop, room type teasers, GSAP entrance, CTA "Check availability" |
-| 2 | `/rooms` | List of all 3 room types with photos, prices, capacity |
-| 3 | `/rooms/:slug` | Room detail — gallery, description, capacity, price, "Book this room" CTA |
-| 4 | `/booking` | 3-step booking flow (dates → guest info → review/confirm) — single route, search-param-driven state |
-| 5 | `/reservation/lookup` | Form: enter code + email |
-| 6 | `/reservation/:code` | Reservation detail with cancel button (after email match) |
-| 7 | `/about` | Static info + contact |
-| 8 | `*` | 404 |
+| #   | Route                 | Purpose                                                                                             |
+| --- | --------------------- | --------------------------------------------------------------------------------------------------- |
+| 1   | `/`                   | Home — hero, value prop, room type teasers, GSAP entrance, CTA "Check availability"                 |
+| 2   | `/rooms`              | List of all 3 room types with photos, prices, capacity                                              |
+| 3   | `/rooms/:slug`        | Room detail — gallery, description, capacity, price, "Book this room" CTA                           |
+| 4   | `/booking`            | 3-step booking flow (dates → guest info → review/confirm) — single route, search-param-driven state |
+| 5   | `/reservation/lookup` | Form: enter code + email                                                                            |
+| 6   | `/reservation/:code`  | Reservation detail with cancel button (after email match)                                           |
+| 7   | `/about`              | Static info + contact                                                                               |
+| 8   | `*`                   | 404                                                                                                 |
 
 Pages 1–3 ship as a static-content milestone. Page 4 (real booking engine) layers on top once the API is in place.
 
@@ -266,17 +266,17 @@ All routes under `/v1/...`. Standard error envelope:
 
 OpenAPI spec exposed at `/docs` in development.
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/v1/room-types` | List all room types with photos, localized text, base price (BRL). Cacheable. |
-| `GET` | `/v1/room-types/:slug` | Detail for a single room type. |
-| `GET` | `/v1/availability?checkIn=…&checkOut=…&roomTypeId=…` | Availability counts per type for date range. `roomTypeId` optional. |
-| `POST` | `/v1/reservations` | Create a pending reservation. Body: `{ roomTypeId, checkIn, checkOut, guestCount, guest: { name, email, phone? } }`. Returns reservation with `code`. |
-| `GET` | `/v1/reservations/:code?email=…` | Look up a reservation. Email must match (anti-enumeration). |
-| `POST` | `/v1/reservations/:code/cancel` | Cancel. Body: `{ email }`. Sets status to `CANCELLED`. |
-| `GET` | `/v1/exchange-rates` | Latest cached BRL→USD/EUR rates. |
-| `GET` | `/v1/healthz` | Liveness probe. |
-| `GET` | `/v1/readyz` | Readiness — checks DB connectivity. |
+| Method | Path                                                 | Purpose                                                                                                                                               |
+| ------ | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/v1/room-types`                                     | List all room types with photos, localized text, base price (BRL). Cacheable.                                                                         |
+| `GET`  | `/v1/room-types/:slug`                               | Detail for a single room type.                                                                                                                        |
+| `GET`  | `/v1/availability?checkIn=…&checkOut=…&roomTypeId=…` | Availability counts per type for date range. `roomTypeId` optional.                                                                                   |
+| `POST` | `/v1/reservations`                                   | Create a pending reservation. Body: `{ roomTypeId, checkIn, checkOut, guestCount, guest: { name, email, phone? } }`. Returns reservation with `code`. |
+| `GET`  | `/v1/reservations/:code?email=…`                     | Look up a reservation. Email must match (anti-enumeration).                                                                                           |
+| `POST` | `/v1/reservations/:code/cancel`                      | Cancel. Body: `{ email }`. Sets status to `CANCELLED`.                                                                                                |
+| `GET`  | `/v1/exchange-rates`                                 | Latest cached BRL→USD/EUR rates.                                                                                                                      |
+| `GET`  | `/v1/healthz`                                        | Liveness probe.                                                                                                                                       |
+| `GET`  | `/v1/readyz`                                         | Readiness — checks DB connectivity.                                                                                                                   |
 
 ### Reservation creation flow
 
@@ -301,15 +301,15 @@ When the app moves to multiple instances, the cron job is moved out to a dedicat
 
 ### Validation rules (shared Zod schemas)
 
-| Field | Rule |
-|---|---|
-| `checkIn` | Date ≥ today, ISO format |
-| `checkOut` | Date > `checkIn`, ≤ 365 days from today |
-| Stay length | 1 to 30 nights |
-| `guestCount` | Integer, 1 ≤ count ≤ `roomType.capacity` |
-| `email` | RFC 5322 |
-| `phone` | Optional, libphonenumber validation if present |
-| `name` | 2–80 chars, trimmed, non-empty |
+| Field        | Rule                                           |
+| ------------ | ---------------------------------------------- |
+| `checkIn`    | Date ≥ today, ISO format                       |
+| `checkOut`   | Date > `checkIn`, ≤ 365 days from today        |
+| Stay length  | 1 to 30 nights                                 |
+| `guestCount` | Integer, 1 ≤ count ≤ `roomType.capacity`       |
+| `email`      | RFC 5322                                       |
+| `phone`      | Optional, libphonenumber validation if present |
+| `name`       | 2–80 chars, trimmed, non-empty                 |
 
 ### Stable error codes
 
@@ -353,14 +353,14 @@ When the app moves to multiple instances, the cron job is moved out to a dedicat
 
 ## 8. Testing Strategy
 
-| Layer | Tool | What's tested |
-|---|---|---|
-| API integration | Vitest + Fastify `inject` | All endpoints against a real Postgres (Testcontainers or `docker-compose.test.yml`). |
-| API unit | Vitest | Currency conversion, date helpers, reservation code generator, availability calc helpers. |
-| Concurrency | Vitest | Simulated parallel booking inserts on the same room/dates — assert exactly one succeeds; others receive `ROOM_NO_LONGER_AVAILABLE`. |
-| Frontend unit | Vitest + React Testing Library | Hooks (`useCurrency`, `useGsap`), components, form validation. |
-| Frontend E2E | Playwright | Full booking happy path; reservation lookup + cancel; PT/EN/ES smoke. |
-| A11y | `@axe-core/playwright` | Key pages must pass axe. |
+| Layer           | Tool                           | What's tested                                                                                                                       |
+| --------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| API integration | Vitest + Fastify `inject`      | All endpoints against a real Postgres (Testcontainers or `docker-compose.test.yml`).                                                |
+| API unit        | Vitest                         | Currency conversion, date helpers, reservation code generator, availability calc helpers.                                           |
+| Concurrency     | Vitest                         | Simulated parallel booking inserts on the same room/dates — assert exactly one succeeds; others receive `ROOM_NO_LONGER_AVAILABLE`. |
+| Frontend unit   | Vitest + React Testing Library | Hooks (`useCurrency`, `useGsap`), components, form validation.                                                                      |
+| Frontend E2E    | Playwright                     | Full booking happy path; reservation lookup + cancel; PT/EN/ES smoke.                                                               |
+| A11y            | `@axe-core/playwright`         | Key pages must pass axe.                                                                                                            |
 
 No coverage-percentage targets. Booking + availability paths must be tested. Each frontend page must have at least one render test and the two E2E flows must pass.
 

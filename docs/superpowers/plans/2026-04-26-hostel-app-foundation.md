@@ -11,6 +11,7 @@
 **Reference spec:** `docs/superpowers/specs/2026-04-26-hostel-app-design.md`
 
 **Out of scope for this plan:**
+
 - Prisma / DB schema / migrations (Plan 1).
 - TanStack Router / Query / i18n / GSAP / actual pages (Plan 2+).
 - API endpoints (Plan 1+).
@@ -92,6 +93,7 @@ Expected: Non-empty values. If empty, instruct user to set them before continuin
 ### Task 1: Initialize git repository and ignore files
 
 **Files:**
+
 - Create: `.gitignore`
 - Create: `.gitattributes`
 - Create: `.editorconfig`
@@ -195,6 +197,7 @@ auto-install-peers=true
 ### Task 2: Workspace root configuration
 
 **Files:**
+
 - Create: `package.json`
 - Create: `pnpm-workspace.yaml`
 - Create: `tsconfig.base.json`
@@ -278,6 +281,7 @@ packages:
 ### Task 3: ESLint + Prettier configuration
 
 **Files:**
+
 - Create: `eslint.config.mjs`
 - Create: `.prettierrc.json`
 - Create: `.prettierignore`
@@ -364,6 +368,7 @@ pnpm-lock.yaml
 ### Task 4: `packages/shared` scaffold
 
 **Files:**
+
 - Create: `packages/shared/package.json`
 - Create: `packages/shared/tsconfig.json`
 - Create: `packages/shared/src/index.ts`
@@ -418,6 +423,7 @@ export const SHARED_PACKAGE_VERSION = "0.0.0";
 ### Task 5: `apps/api` scaffold
 
 **Files:**
+
 - Create: `apps/api/package.json`
 - Create: `apps/api/tsconfig.json`
 - Create: `apps/api/tsup.config.ts`
@@ -527,6 +533,7 @@ app
 ### Task 6: `apps/web` scaffold
 
 **Files:**
+
 - Create: `apps/web/package.json`
 - Create: `apps/web/tsconfig.json`
 - Create: `apps/web/tsconfig.node.json`
@@ -549,9 +556,9 @@ app
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
   },
   "dependencies": {
     "@hostel/shared": "workspace:*",
@@ -586,10 +593,7 @@ app
     "types": []
   },
   "include": ["src"],
-  "references": [
-    { "path": "../../packages/shared" },
-    { "path": "./tsconfig.node.json" }
-  ]
+  "references": [{ "path": "../../packages/shared" }]
 }
 ```
 
@@ -599,9 +603,9 @@ app
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "noEmit": true,
     "types": ["node"]
   },
   "include": ["vite.config.ts", "tailwind.config.ts", "postcss.config.js"]
@@ -735,6 +739,7 @@ export function App() {
 ### Task 7: docker-compose for local Postgres
 
 **Files:**
+
 - Create: `docker-compose.yml`
 
 - [ ] **Step 1: Write `docker-compose.yml`**
@@ -770,12 +775,13 @@ volumes:
 ### Task 8: README and CLAUDE.md
 
 **Files:**
+
 - Create: `README.md`
 - Create: `CLAUDE.md`
 
 - [ ] **Step 1: Write `README.md`**
 
-```markdown
+````markdown
 # Hostel App
 
 Booking site for an Inn / Bed & Breakfast / Hostel. Monorepo: React frontend, Fastify API, Postgres database. Multilingual (PT/EN/ES), multi-currency (BRL/USD/EUR).
@@ -797,6 +803,7 @@ pnpm install
 docker compose up -d
 pnpm dev
 ```
+````
 
 - Web: http://localhost:5173
 - API: http://localhost:3001
@@ -818,7 +825,8 @@ docs/
 ## Status
 
 Foundation scaffolded. See `docs/superpowers/plans/` for the implementation roadmap.
-```
+
+````
 
 - [ ] **Step 2: Write `CLAUDE.md`**
 
@@ -869,13 +877,14 @@ This file documents the conventions in this repo so AI assistants (and humans) s
 - Don't introduce backwards-compat shims for unshipped code.
 - Don't commit `.env` files.
 - Don't bypass the EXCLUDE constraint with application-level locks.
-```
+````
 
 ---
 
 ### Task 9: Husky pre-commit hook
 
 **Files:**
+
 - Create: `.husky/pre-commit`
 
 - [ ] **Step 1: Install dependencies and initialize husky**
@@ -955,6 +964,7 @@ Run: `git add .`
 
 Run: `git status`
 Expected: All scaffolded files listed under "Changes to be committed". `node_modules/` and `pnpm-lock.yaml` behavior:
+
 - `pnpm-lock.yaml` SHOULD be committed.
 - `node_modules/` MUST NOT be present (covered by `.gitignore`).
 
@@ -1009,6 +1019,7 @@ Placeholder scan: every step contains exact file content or exact commands. No "
 Type consistency: file names and package names match across all task references (`@hostel/web`, `@hostel/api`, `@hostel/shared`).
 
 Open follow-ups (next plans):
+
 - Plan 1: Prisma + Postgres + room/reservation schema + migrations + seed + GET endpoints.
 - Plan 2: Frontend foundations (TanStack Router, TanStack Query, i18n, currency, design system primitives).
 - Plan 3+: Page-by-page from §5.
