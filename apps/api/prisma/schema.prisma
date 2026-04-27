@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RoomType {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         Json
+  description  Json
+  capacity     Int
+  basePriceBRL Decimal  @db.Decimal(10, 2)
+  photos       String[]
+  rooms        Room[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Room {
+  id           String        @id @default(cuid())
+  number       String        @unique
+  roomTypeId   String
+  roomType     RoomType      @relation(fields: [roomTypeId], references: [id])
+  active       Boolean       @default(true)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+}
+
+model Reservation {
+  id            String            @id @default(cuid())
+  code          String            @unique
+  roomId        String
+  room          Room              @relation(fields: [roomId], references: [id])
+  roomTypeId    String
+  guestName     String
+  guestEmail    String
+  guestPhone    String?
+  guestCount    Int
+  checkIn       DateTime          @db.Date
+  checkOut      DateTime          @db.Date
+  priceTotalBRL Decimal           @db.Decimal(10, 2)
+  status        ReservationStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([guestEmail])
+  @@index([code])
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  CHECKED_IN
+  CHECKED_OUT
+  NO_SHOW
+}
+
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  base      String
+  quote     String
+  rate      Decimal  @db.Decimal(18, 8)
+  fetchedAt DateTime @default(now())
+
+  @@unique([base, quote, fetchedAt])
+  @@index([base, quote])
+}

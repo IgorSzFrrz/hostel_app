@@ -9,6 +9,5 @@
     "useDefineForClassFields": true,
     "types": []
   },
-  "include": ["src"],
-  "references": [{ "path": "../../packages/shared" }]
+  "include": ["src"]
 }

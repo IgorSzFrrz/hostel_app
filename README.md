@@ -18,13 +18,38 @@ Requires Node 20+ and Docker.
 corepack enable
 corepack prepare pnpm@9.12.0 --activate
 pnpm install
+Copy-Item apps/api/.env.example apps/api/.env
 docker compose up -d
+pnpm --filter @hostel/api db:migrate
+pnpm --filter @hostel/api db:seed
 pnpm dev
 ```
 
 - Web: http://localhost:5173
 - API: http://localhost:3001
 - API health: http://localhost:3001/v1/healthz
+
+## API
+
+Initial public endpoints:
+
+- `GET /v1/healthz`
+- `GET /v1/readyz`
+- `GET /v1/room-types`
+- `GET /v1/room-types/:slug`
+- `GET /v1/availability?checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD&roomTypeId=...`
+- `POST /v1/reservations`
+- `GET /v1/reservations/:code?email=...`
+- `POST /v1/reservations/:code/cancel`
+
+Database commands:
+
+```bash
+pnpm --filter @hostel/api db:generate
+pnpm --filter @hostel/api db:validate
+pnpm --filter @hostel/api db:migrate
+pnpm --filter @hostel/api db:seed
+```
 
 ## Repo Layout
 

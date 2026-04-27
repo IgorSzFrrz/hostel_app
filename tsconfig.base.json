@@ -16,7 +16,11 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@hostel/shared": ["packages/shared/src/index.ts"]
+    }
   },
   "exclude": ["**/node_modules", "**/dist", "**/build"]
 }
