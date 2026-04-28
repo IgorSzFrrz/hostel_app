@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const SHARED_PACKAGE_VERSION = "0.0.0";
+export const PROPERTY_TIME_ZONE = "America/Sao_Paulo";
 
 export const LOCALES = ["pt", "en", "es"] as const;
 export const CURRENCIES = ["BRL", "USD", "EUR"] as const;
@@ -52,6 +53,27 @@ export function toIsoDateOnly(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+export function toPropertyIsoDateOnly(
+  date: Date = new Date(),
+  timeZone = PROPERTY_TIME_ZONE,
+): string {
+  const parts = new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    throw new Error(`Unable to format date for time zone: ${timeZone}`);
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
 export function addDays(date: Date, days: number): Date {
   return new Date(date.getTime() + days * MS_PER_DAY);
 }
@@ -72,7 +94,7 @@ function isValidIsoDate(value: string): boolean {
 }
 
 function todayDateOnly(): Date {
-  return toDateOnly(toIsoDateOnly(new Date()));
+  return toDateOnly(toPropertyIsoDateOnly());
 }
 
 function validateStayRange(value: { checkIn: string; checkOut: string }, context: z.RefinementCtx) {
@@ -208,3 +230,13 @@ export type AvailabilityQuery = z.infer<typeof availabilityQuerySchema>;
 export type AvailabilityResponse = z.infer<typeof availabilityResponseSchema>;
 export type CreateReservationRequest = z.infer<typeof createReservationRequestSchema>;
 export type ReservationResponse = z.infer<typeof reservationResponseSchema>;
+export type ReservationStatus = z.infer<typeof reservationStatusSchema>;
+
+export const CANCELABLE_RESERVATION_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+] as const satisfies readonly ReservationStatus[];
+
+export function isReservationCancelableStatus(status: string): status is ReservationStatus {
+  return (CANCELABLE_RESERVATION_STATUSES as readonly string[]).includes(status);
+}
