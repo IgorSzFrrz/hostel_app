@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { AboutPage } from "../pages/AboutPage";
 import { HomePage } from "../pages/HomePage";
 import { NotFoundPage } from "../pages/NotFoundPage";
+import { ReservationPage } from "../pages/ReservationPage";
 import { RoomDetailPage } from "../pages/RoomDetailPage";
 import { RoomsPage } from "../pages/RoomsPage";
 
@@ -68,7 +69,7 @@ function Header() {
         <div className="hidden items-center gap-4 lg:flex">
           <LanguageSwitch />
           <Link
-            to="/rooms"
+            to="/reservation"
             className="rounded-lg bg-orange px-7 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-dark focus:outline-none focus:ring-2 focus:ring-orange/30"
           >
             {t("nav.bookNow")}
@@ -102,7 +103,7 @@ function Header() {
           <div className="mt-3 flex items-center justify-between border-t border-black/10 pt-3">
             <LanguageSwitch />
             <Link
-              to="/rooms"
+              to="/reservation"
               className="inline-flex rounded-lg bg-orange px-4 py-2 text-sm font-bold text-white"
               onClick={() => setIsOpen(false)}
             >
@@ -199,7 +200,19 @@ const aboutRoute = createRoute({
   component: AboutPage,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, roomsRoute, roomDetailRoute, aboutRoute]);
+const reservationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/reservation",
+  component: ReservationPage,
+});
+
+const routeTree = rootRoute.addChildren([
+  homeRoute,
+  roomsRoute,
+  roomDetailRoute,
+  reservationRoute,
+  aboutRoute,
+]);
 
 export const router = createRouter({ routeTree });
 

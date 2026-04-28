@@ -74,3 +74,26 @@ export function createReservation(payload: CreateReservationRequest, locale: str
     body: JSON.stringify(payload),
   });
 }
+
+export function getReservation(code: string, email: string, locale: string) {
+  const searchParams = new URLSearchParams({ email });
+
+  return apiFetch<ReservationResponse>(
+    `/v1/reservations/${encodeURIComponent(code)}?${searchParams.toString()}`,
+    locale,
+  );
+}
+
+export function cancelReservation(code: string, email: string, locale: string) {
+  return apiFetch<ReservationResponse>(
+    `/v1/reservations/${encodeURIComponent(code)}/cancel`,
+    locale,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    },
+  );
+}
