@@ -3,7 +3,6 @@ import { Facebook, Globe2, Home, Instagram, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AboutPage } from "../pages/AboutPage";
-import { BookingPage } from "../pages/BookingPage";
 import { HomePage } from "../pages/HomePage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { RoomDetailPage } from "../pages/RoomDetailPage";
@@ -38,7 +37,7 @@ function Header() {
     { href: "/#amenities", label: t("nav.amenities") },
     { href: "/about", label: t("nav.about") },
     { href: "/#location", label: t("nav.location") },
-    { href: "/#contact", label: t("nav.contact") },
+    // { href: "/#contact", label: t("nav.contact") },
   ];
 
   return (
@@ -69,8 +68,7 @@ function Header() {
         <div className="hidden items-center gap-4 lg:flex">
           <LanguageSwitch />
           <Link
-            to="/booking"
-            search={{ roomTypeId: undefined }}
+            to="/rooms"
             className="rounded-lg bg-orange px-7 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-dark focus:outline-none focus:ring-2 focus:ring-orange/30"
           >
             {t("nav.bookNow")}
@@ -104,8 +102,7 @@ function Header() {
           <div className="mt-3 flex items-center justify-between border-t border-black/10 pt-3">
             <LanguageSwitch />
             <Link
-              to="/booking"
-              search={{ roomTypeId: undefined }}
+              to="/rooms"
               className="inline-flex rounded-lg bg-orange px-4 py-2 text-sm font-bold text-white"
               onClick={() => setIsOpen(false)}
             >
@@ -196,28 +193,13 @@ const roomDetailRoute = createRoute({
   },
 });
 
-const bookingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/booking",
-  validateSearch: (search: Record<string, unknown>) => ({
-    roomTypeId: typeof search.roomTypeId === "string" ? search.roomTypeId : undefined,
-  }),
-  component: BookingPage,
-});
-
 const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/about",
   component: AboutPage,
 });
 
-const routeTree = rootRoute.addChildren([
-  homeRoute,
-  roomsRoute,
-  roomDetailRoute,
-  bookingRoute,
-  aboutRoute,
-]);
+const routeTree = rootRoute.addChildren([homeRoute, roomsRoute, roomDetailRoute, aboutRoute]);
 
 export const router = createRouter({ routeTree });
 

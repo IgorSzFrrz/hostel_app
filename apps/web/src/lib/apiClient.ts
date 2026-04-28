@@ -1,4 +1,9 @@
-import type { AvailabilityResponse, RoomTypeResponse } from "@hostel/shared";
+import type {
+  AvailabilityResponse,
+  CreateReservationRequest,
+  ReservationResponse,
+  RoomTypeResponse,
+} from "@hostel/shared";
 
 export type RoomTypesResponse = {
   roomTypes: RoomTypeResponse[];
@@ -16,11 +21,13 @@ export class ApiError extends Error {
   }
 }
 
-async function apiFetch<T>(path: string, locale: string): Promise<T> {
+async function apiFetch<T>(path: string, locale: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
     headers: {
       Accept: "application/json",
       "Accept-Language": locale,
+      ...init?.headers,
     },
   });
 
@@ -56,4 +63,14 @@ export function getAvailability(params: AvailabilityParams, locale: string) {
   }
 
   return apiFetch<AvailabilityResponse>(`/v1/availability?${searchParams.toString()}`, locale);
+}
+
+export function createReservation(payload: CreateReservationRequest, locale: string) {
+  return apiFetch<ReservationResponse>("/v1/reservations", locale, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
 }
