@@ -1,7 +1,13 @@
-import { addDays, differenceInNights, toDateOnly, toIsoDateOnly } from "@hostel/shared";
+import {
+  addDays,
+  differenceInNights,
+  toDateOnly,
+  toIsoDateOnly,
+  toPropertyIsoDateOnly,
+} from "@hostel/shared";
 
 export function todayIsoDate() {
-  return toIsoDateOnly(new Date());
+  return toPropertyIsoDateOnly();
 }
 
 export function addDaysToIsoDate(value: string, days: number) {
