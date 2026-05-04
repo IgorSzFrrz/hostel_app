@@ -7,7 +7,7 @@ export type StoredReservationLookup = {
 
 export function getStoredReservationLookup(): StoredReservationLookup | null {
   try {
-    const rawValue = window.localStorage.getItem(STORAGE_KEY);
+    const rawValue = window.sessionStorage.getItem(STORAGE_KEY);
     if (!rawValue) return null;
 
     const value = JSON.parse(rawValue) as Partial<StoredReservationLookup>;
@@ -23,15 +23,19 @@ export function getStoredReservationLookup(): StoredReservationLookup | null {
 }
 
 export function setStoredReservationLookup(lookup: StoredReservationLookup) {
-  window.localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({
-      code: lookup.code,
-      email: lookup.email.trim().toLowerCase(),
-    }),
-  );
+  try {
+    window.sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        code: lookup.code,
+        email: lookup.email.trim().toLowerCase(),
+      }),
+    );
+  } catch {
+    // Private browsing and hardened profiles may block storage.
+  }
 }
 
 export function clearStoredReservationLookup() {
-  window.localStorage.removeItem(STORAGE_KEY);
+  window.sessionStorage.removeItem(STORAGE_KEY);
 }

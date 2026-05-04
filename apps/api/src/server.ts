@@ -1,5 +1,6 @@
 import sensible from "@fastify/sensible";
 import Fastify from "fastify";
+import { createRateLimiter } from "./lib/rate-limit.js";
 import { prisma } from "./lib/prisma.js";
 import { sendError } from "./lib/http.js";
 import { registerAvailabilityRoutes } from "./routes/availability.js";
@@ -8,15 +9,27 @@ import { registerRoomTypeRoutes } from "./routes/room-types.js";
 
 export function buildServer() {
   const app = Fastify({
+    bodyLimit: 64 * 1024,
     logger: {
       level: process.env.LOG_LEVEL ?? "info",
     },
+  });
+  const rateLimiter = createRateLimiter();
+
+  app.addHook("onRequest", async (_request, reply) => {
+    reply.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+    reply.header("Cross-Origin-Opener-Policy", "same-origin");
+    reply.header("Cross-Origin-Resource-Policy", "same-origin");
+    reply.header("Permissions-Policy", "camera=(), geolocation=(), microphone=(), payment=()");
+    reply.header("Referrer-Policy", "no-referrer");
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("X-Frame-Options", "DENY");
   });
 
   app.register(sensible);
   app.register(registerRoomTypeRoutes);
   app.register(registerAvailabilityRoutes);
-  app.register(registerReservationRoutes);
+  app.register(registerReservationRoutes, { rateLimiter });
 
   app.get("/v1/healthz", async () => ({ status: "ok" }));
 
@@ -32,9 +45,21 @@ export function buildServer() {
   app.setErrorHandler((error, request, reply) => {
     request.log.error(error);
 
-    const statusCode = error.statusCode && error.statusCode >= 400 ? error.statusCode : 500;
+    const errorStatusCode =
+      typeof error === "object" &&
+      error !== null &&
+      "statusCode" in error &&
+      typeof error.statusCode === "number"
+        ? error.statusCode
+        : undefined;
+    const statusCode = errorStatusCode && errorStatusCode >= 400 ? errorStatusCode : 500;
     const code = statusCode >= 500 ? "INTERNAL_SERVER_ERROR" : "REQUEST_FAILED";
-    const message = statusCode >= 500 ? "Internal server error." : error.message;
+    const message =
+      statusCode >= 500
+        ? "Internal server error."
+        : error instanceof Error
+          ? error.message
+          : "Request failed.";
 
     sendError(reply, statusCode, code, message);
   });

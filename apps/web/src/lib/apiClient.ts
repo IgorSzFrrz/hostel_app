@@ -76,11 +76,16 @@ export function createReservation(payload: CreateReservationRequest, locale: str
 }
 
 export function getReservation(code: string, email: string, locale: string) {
-  const searchParams = new URLSearchParams({ email });
-
   return apiFetch<ReservationResponse>(
-    `/v1/reservations/${encodeURIComponent(code)}?${searchParams.toString()}`,
+    `/v1/reservations/${encodeURIComponent(code)}/lookup`,
     locale,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    },
   );
 }
 

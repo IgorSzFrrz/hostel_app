@@ -178,9 +178,9 @@ export const createReservationRequestSchema = z
 export const reservationCodeSchema = z
   .string()
   .trim()
-  .regex(/^HST-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{5}$/);
+  .regex(/^HST-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{8}$/);
 
-export const lookupReservationQuerySchema = z.object({
+export const lookupReservationRequestSchema = z.object({
   email: z
     .string()
     .trim()
@@ -188,7 +188,7 @@ export const lookupReservationQuerySchema = z.object({
     .transform((value) => value.toLowerCase()),
 });
 
-export const cancelReservationRequestSchema = lookupReservationQuerySchema;
+export const cancelReservationRequestSchema = lookupReservationRequestSchema;
 
 export const reservationResponseSchema = z.object({
   code: reservationCodeSchema,

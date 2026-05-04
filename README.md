@@ -39,7 +39,7 @@ Initial public endpoints:
 - `GET /v1/room-types/:slug`
 - `GET /v1/availability?checkIn=YYYY-MM-DD&checkOut=YYYY-MM-DD&roomTypeId=...`
 - `POST /v1/reservations`
-- `GET /v1/reservations/:code?email=...`
+- `POST /v1/reservations/:code/lookup`
 - `POST /v1/reservations/:code/cancel`
 
 Database commands:

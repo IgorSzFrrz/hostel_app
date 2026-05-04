@@ -154,7 +154,7 @@ export function ReservationPage() {
                   className="min-h-12 rounded-lg border border-black/15 bg-white px-4 text-sm font-semibold uppercase text-black outline-none transition focus:border-orange focus:ring-2 focus:ring-orange/20"
                   value={code}
                   onChange={(event) => setCode(event.target.value)}
-                  placeholder="HST-ABCDE"
+                  placeholder="HST-ABCDEFGH"
                 />
               </label>
 

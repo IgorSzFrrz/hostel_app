@@ -2,7 +2,7 @@ import { randomInt } from "node:crypto";
 import { ReservationStatus } from "@prisma/client";
 
 const RESERVATION_CODE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
-const RESERVATION_CODE_LENGTH = 5;
+const RESERVATION_CODE_LENGTH = 8;
 
 export const ACTIVE_RESERVATION_STATUSES: ReservationStatus[] = [
   ReservationStatus.PENDING,

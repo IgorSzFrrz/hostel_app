@@ -5,7 +5,7 @@ import {
   cancelReservationRequestSchema,
   createReservationRequestSchema,
   differenceInNights,
-  lookupReservationQuerySchema,
+  lookupReservationRequestSchema,
   reservationCodeSchema,
   toDateOnly,
   toIsoDateOnly,
@@ -14,9 +14,29 @@ import {
 import { sendError, sendValidationError } from "../lib/http.js";
 import { pickLocale, serializeRoomType } from "../lib/localization.js";
 import { prisma } from "../lib/prisma.js";
+import type { createRateLimiter } from "../lib/rate-limit.js";
 import { ACTIVE_RESERVATION_STATUSES, generateReservationCode } from "../lib/reservation-code.js";
 
-const MAX_CODE_GENERATION_ATTEMPTS = 3;
+const MAX_CODE_GENERATION_ATTEMPTS = 5;
+const CREATE_RESERVATION_RATE_LIMIT = {
+  max: 10,
+  scope: "reservation-create",
+  windowMs: 10 * 60 * 1000,
+};
+const LOOKUP_RESERVATION_RATE_LIMIT = {
+  max: 15,
+  scope: "reservation-lookup",
+  windowMs: 60 * 1000,
+};
+const CANCEL_RESERVATION_RATE_LIMIT = {
+  max: 8,
+  scope: "reservation-cancel",
+  windowMs: 60 * 1000,
+};
+
+type ReservationRouteOptions = {
+  rateLimiter: ReturnType<typeof createRateLimiter>;
+};
 
 type ReservationWithRoomType = Prisma.ReservationGetPayload<{
   include: {
@@ -87,8 +107,15 @@ async function findReservationForEmail(code: string, email: string) {
   return reservation;
 }
 
-export async function registerReservationRoutes(app: FastifyInstance) {
+export async function registerReservationRoutes(
+  app: FastifyInstance,
+  options: ReservationRouteOptions,
+) {
   app.post("/v1/reservations", async (request, reply): Promise<ReservationResponse | void> => {
+    if (!options.rateLimiter.consume(request, reply, CREATE_RESERVATION_RATE_LIMIT)) {
+      return;
+    }
+
     const parsedBody = createReservationRequestSchema.safeParse(request.body);
     if (!parsedBody.success) {
       sendValidationError(reply, parsedBody.error);
@@ -175,34 +202,45 @@ export async function registerReservationRoutes(app: FastifyInstance) {
     sendError(reply, 409, "ROOM_NO_LONGER_AVAILABLE", "No room is available for these dates.");
   });
 
-  app.get("/v1/reservations/:code", async (request, reply): Promise<ReservationResponse | void> => {
-    const parsedParams = reservationCodeSchema.safeParse(
-      (request.params as { code?: unknown }).code,
-    );
-    const parsedQuery = lookupReservationQuerySchema.safeParse(request.query);
+  app.post(
+    "/v1/reservations/:code/lookup",
+    async (request, reply): Promise<ReservationResponse | void> => {
+      if (!options.rateLimiter.consume(request, reply, LOOKUP_RESERVATION_RATE_LIMIT)) {
+        return;
+      }
 
-    if (!parsedParams.success) {
-      sendValidationError(reply, parsedParams.error);
-      return;
-    }
+      const parsedParams = reservationCodeSchema.safeParse(
+        (request.params as { code?: unknown }).code,
+      );
+      const parsedBody = lookupReservationRequestSchema.safeParse(request.body);
 
-    if (!parsedQuery.success) {
-      sendValidationError(reply, parsedQuery.error);
-      return;
-    }
+      if (!parsedParams.success) {
+        sendValidationError(reply, parsedParams.error);
+        return;
+      }
 
-    const reservation = await findReservationForEmail(parsedParams.data, parsedQuery.data.email);
-    if (!reservation) {
-      sendError(reply, 404, "RESERVATION_NOT_FOUND", "Reservation was not found.");
-      return;
-    }
+      if (!parsedBody.success) {
+        sendValidationError(reply, parsedBody.error);
+        return;
+      }
 
-    return serializeReservation(reservation, pickLocale(request.headers["accept-language"]));
-  });
+      const reservation = await findReservationForEmail(parsedParams.data, parsedBody.data.email);
+      if (!reservation) {
+        sendError(reply, 404, "RESERVATION_NOT_FOUND", "Reservation was not found.");
+        return;
+      }
+
+      return serializeReservation(reservation, pickLocale(request.headers["accept-language"]));
+    },
+  );
 
   app.post(
     "/v1/reservations/:code/cancel",
     async (request, reply): Promise<ReservationResponse | void> => {
+      if (!options.rateLimiter.consume(request, reply, CANCEL_RESERVATION_RATE_LIMIT)) {
+        return;
+      }
+
       const parsedParams = reservationCodeSchema.safeParse(
         (request.params as { code?: unknown }).code,
       );
