@@ -1,10 +1,12 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { Prisma, type ReservationStatus } from "@prisma/client";
+import { Prisma, ReservationStatus as PrismaReservationStatus } from "@prisma/client";
 import {
+  CANCELABLE_RESERVATION_STATUSES,
   cancelReservationRequestSchema,
   createReservationRequestSchema,
   differenceInNights,
+  isReservationCancelableStatus,
   lookupReservationRequestSchema,
   reservationCodeSchema,
   toDateOnly,
@@ -37,6 +39,9 @@ const CANCEL_RESERVATION_RATE_LIMIT = {
 type ReservationRouteOptions = {
   rateLimiter: ReturnType<typeof createRateLimiter>;
 };
+const CANCELABLE_PRISMA_RESERVATION_STATUSES = CANCELABLE_RESERVATION_STATUSES.map(
+  (status) => PrismaReservationStatus[status],
+);
 
 type ReservationWithRoomType = Prisma.ReservationGetPayload<{
   include: {
@@ -262,22 +267,39 @@ export async function registerReservationRoutes(
         return;
       }
 
-      const cancelledReservation = await prisma.reservation.update({
-        where: { id: reservation.id },
-        data: {
-          status: "CANCELLED" satisfies ReservationStatus,
+      if (!isReservationCancelableStatus(reservation.status)) {
+        sendError(
+          reply,
+          409,
+          "RESERVATION_NOT_CANCELABLE",
+          "Reservation cannot be cancelled in its current status.",
+          { status: reservation.status },
+        );
+        return;
+      }
+
+      const cancelResult = await prisma.reservation.updateMany({
+        where: {
+          id: reservation.id,
+          status: { in: CANCELABLE_PRISMA_RESERVATION_STATUSES },
         },
-        include: {
-          room: {
-            include: {
-              roomType: true,
-            },
-          },
+        data: {
+          status: PrismaReservationStatus.CANCELLED,
         },
       });
 
+      if (cancelResult.count !== 1) {
+        sendError(
+          reply,
+          409,
+          "RESERVATION_NOT_CANCELABLE",
+          "Reservation cannot be cancelled in its current status.",
+        );
+        return;
+      }
+
       return serializeReservation(
-        cancelledReservation,
+        { ...reservation, status: PrismaReservationStatus.CANCELLED },
         pickLocale(request.headers["accept-language"]),
       );
     },

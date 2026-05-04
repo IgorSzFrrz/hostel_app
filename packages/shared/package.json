@@ -9,6 +9,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "test": "pnpm build && node test/index.test.mjs",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   },

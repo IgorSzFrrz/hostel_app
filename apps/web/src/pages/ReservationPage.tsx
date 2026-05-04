@@ -1,4 +1,4 @@
-import type { ReservationResponse } from "@hostel/shared";
+import { isReservationCancelableStatus, type ReservationResponse } from "@hostel/shared";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarDays, CreditCard, Search, Users, XCircle } from "lucide-react";
 import type { FormEvent } from "react";
@@ -28,10 +28,6 @@ function getStatusClassName(status: ReservationStatus) {
   return "bg-emerald-50 text-emerald-700 ring-emerald-100";
 }
 
-function canCancelReservation(status: ReservationStatus) {
-  return status === "PENDING" || status === "CONFIRMED";
-}
-
 export function ReservationPage() {
   const { i18n, t } = useTranslation();
   const [lookup, setLookup] = useState<StoredReservationLookup | null>(() =>
@@ -48,7 +44,7 @@ export function ReservationPage() {
   });
   const cancelReservationMutation = useCancelReservation(i18n.language);
   const reservation = cancelReservationMutation.data ?? reservationQuery.data;
-  const isCancelable = reservation ? canCancelReservation(reservation.status) : false;
+  const isCancelable = reservation ? isReservationCancelableStatus(reservation.status) : false;
 
   useEffect(() => {
     if (!reservation || !lookup) return;

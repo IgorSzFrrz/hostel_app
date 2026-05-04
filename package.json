@@ -12,7 +12,7 @@
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
     "lint": "eslint .",
-    "test": "vitest run --pool=threads",
+    "test": "pnpm --filter @hostel/shared test && vitest run --pool=threads apps/api/test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
