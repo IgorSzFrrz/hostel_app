@@ -38,7 +38,6 @@ function Header() {
     { href: "/#amenities", label: t("nav.amenities") },
     { href: "/about", label: t("nav.about") },
     { href: "/#location", label: t("nav.location") },
-    // { href: "/#contact", label: t("nav.contact") },
   ];
 
   return (
