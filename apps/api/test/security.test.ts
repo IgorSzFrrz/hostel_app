@@ -3,6 +3,26 @@ import { reservationCodeSchema } from "@hostel/shared";
 import { generateReservationCode } from "../src/lib/reservation-code.js";
 import { buildServer } from "../src/server.js";
 
+const ORIGINAL_CORS_ORIGINS = process.env.CORS_ORIGINS;
+
+async function withCorsOrigins(corsOrigins: string | undefined, run: () => Promise<void>) {
+  if (corsOrigins === undefined) {
+    delete process.env.CORS_ORIGINS;
+  } else {
+    process.env.CORS_ORIGINS = corsOrigins;
+  }
+
+  try {
+    await run();
+  } finally {
+    if (ORIGINAL_CORS_ORIGINS === undefined) {
+      delete process.env.CORS_ORIGINS;
+    } else {
+      process.env.CORS_ORIGINS = ORIGINAL_CORS_ORIGINS;
+    }
+  }
+}
+
 describe("API security controls", () => {
   it("sets defensive headers on API responses", async () => {
     const app = buildServer();
@@ -20,6 +40,78 @@ describe("API security controls", () => {
     } finally {
       await app.close();
     }
+  });
+
+  it("allows configured browser origins", async () => {
+    await withCorsOrigins("https://web.example,http://localhost:5173", async () => {
+      const app = buildServer();
+
+      try {
+        const response = await app.inject({
+          method: "GET",
+          url: "/v1/healthz",
+          headers: {
+            Origin: "https://web.example",
+          },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.headers["access-control-allow-origin"]).toBe("https://web.example");
+        expect(response.headers["access-control-allow-methods"]).toBe("GET,POST,OPTIONS");
+        expect(response.headers["access-control-allow-headers"]).toBe(
+          "Accept,Accept-Language,Content-Type",
+        );
+        expect(response.headers.vary).toBe("Origin");
+      } finally {
+        await app.close();
+      }
+    });
+  });
+
+  it("does not allow unconfigured browser origins", async () => {
+    await withCorsOrigins("https://web.example", async () => {
+      const app = buildServer();
+
+      try {
+        const response = await app.inject({
+          method: "GET",
+          url: "/v1/healthz",
+          headers: {
+            Origin: "https://other.example",
+          },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.headers["access-control-allow-origin"]).toBeUndefined();
+      } finally {
+        await app.close();
+      }
+    });
+  });
+
+  it("answers CORS preflight requests for configured origins", async () => {
+    await withCorsOrigins("https://web.example", async () => {
+      const app = buildServer();
+
+      try {
+        const response = await app.inject({
+          method: "OPTIONS",
+          url: "/v1/reservations",
+          headers: {
+            "Access-Control-Request-Headers": "Content-Type",
+            "Access-Control-Request-Method": "POST",
+            Origin: "https://web.example",
+          },
+        });
+
+        expect(response.statusCode).toBe(204);
+        expect(response.body).toBe("");
+        expect(response.headers["access-control-allow-origin"]).toBe("https://web.example");
+        expect(response.headers["access-control-max-age"]).toBe("86400");
+      } finally {
+        await app.close();
+      }
+    });
   });
 
   it("rate limits reservation creation attempts before database access", async () => {

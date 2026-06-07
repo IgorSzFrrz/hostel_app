@@ -7,6 +7,27 @@ import { registerAvailabilityRoutes } from "./routes/availability.js";
 import { registerReservationRoutes } from "./routes/reservations.js";
 import { registerRoomTypeRoutes } from "./routes/room-types.js";
 
+const CORS_ALLOW_METHODS = "GET,POST,OPTIONS";
+const CORS_ALLOW_HEADERS = "Accept,Accept-Language,Content-Type";
+const CORS_MAX_AGE_SECONDS = 86_400;
+
+function parseCorsOrigins(value: string | undefined): string[] {
+  return (
+    value
+      ?.split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean) ?? []
+  );
+}
+
+function getHeaderValue(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function isCorsOriginAllowed(origin: string, allowedOrigins: readonly string[]): boolean {
+  return allowedOrigins.includes("*") || allowedOrigins.includes(origin);
+}
+
 export function buildServer() {
   const app = Fastify({
     bodyLimit: 64 * 1024,
@@ -15,8 +36,9 @@ export function buildServer() {
     },
   });
   const rateLimiter = createRateLimiter();
+  const corsOrigins = parseCorsOrigins(process.env.CORS_ORIGINS);
 
-  app.addHook("onRequest", async (_request, reply) => {
+  app.addHook("onRequest", async (request, reply) => {
     reply.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
     reply.header("Cross-Origin-Opener-Policy", "same-origin");
     reply.header("Cross-Origin-Resource-Policy", "same-origin");
@@ -24,6 +46,19 @@ export function buildServer() {
     reply.header("Referrer-Policy", "no-referrer");
     reply.header("X-Content-Type-Options", "nosniff");
     reply.header("X-Frame-Options", "DENY");
+
+    const origin = getHeaderValue(request.headers.origin);
+    if (origin && isCorsOriginAllowed(origin, corsOrigins)) {
+      reply.header("Access-Control-Allow-Origin", corsOrigins.includes("*") ? "*" : origin);
+      reply.header("Access-Control-Allow-Methods", CORS_ALLOW_METHODS);
+      reply.header("Access-Control-Allow-Headers", CORS_ALLOW_HEADERS);
+      reply.header("Access-Control-Max-Age", CORS_MAX_AGE_SECONDS.toString());
+      reply.header("Vary", "Origin");
+    }
+
+    if (request.method === "OPTIONS") {
+      return reply.code(204).send();
+    }
   });
 
   app.register(sensible);

@@ -29,6 +29,11 @@ pnpm dev
 - API: http://localhost:3001
 - API health: http://localhost:3001/v1/healthz
 
+For a deployed frontend and API on different origins, set:
+
+- API: `CORS_ORIGINS="https://your-web-origin.example"`
+- Web: `VITE_API_BASE_URL="https://your-api-origin.example"`
+
 ## API
 
 Initial public endpoints:
