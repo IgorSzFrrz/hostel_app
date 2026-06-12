@@ -4,6 +4,7 @@ import { generateReservationCode } from "../src/lib/reservation-code.js";
 import { buildServer } from "../src/server.js";
 
 const ORIGINAL_CORS_ORIGINS = process.env.CORS_ORIGINS;
+const ORIGINAL_TRUST_PROXY = process.env.TRUST_PROXY;
 
 async function withCorsOrigins(corsOrigins: string | undefined, run: () => Promise<void>) {
   if (corsOrigins === undefined) {
@@ -19,6 +20,24 @@ async function withCorsOrigins(corsOrigins: string | undefined, run: () => Promi
       delete process.env.CORS_ORIGINS;
     } else {
       process.env.CORS_ORIGINS = ORIGINAL_CORS_ORIGINS;
+    }
+  }
+}
+
+async function withTrustProxy(trustProxy: string | undefined, run: () => Promise<void>) {
+  if (trustProxy === undefined) {
+    delete process.env.TRUST_PROXY;
+  } else {
+    process.env.TRUST_PROXY = trustProxy;
+  }
+
+  try {
+    await run();
+  } finally {
+    if (ORIGINAL_TRUST_PROXY === undefined) {
+      delete process.env.TRUST_PROXY;
+    } else {
+      process.env.TRUST_PROXY = ORIGINAL_TRUST_PROXY;
     }
   }
 }
@@ -141,6 +160,78 @@ describe("API security controls", () => {
     } finally {
       await app.close();
     }
+  });
+
+  it("keeps proxied client rate limits separate when trusted proxy mode is enabled", async () => {
+    await withTrustProxy("true", async () => {
+      const app = buildServer();
+
+      try {
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          const response = await app.inject({
+            method: "POST",
+            url: "/v1/reservations",
+            headers: {
+              "x-forwarded-for": "203.0.113.20",
+            },
+            payload: {},
+            remoteAddress: "10.0.0.10",
+          });
+
+          expect(response.statusCode).toBe(400);
+        }
+
+        const differentClientResponse = await app.inject({
+          method: "POST",
+          url: "/v1/reservations",
+          headers: {
+            "x-forwarded-for": "203.0.113.21",
+          },
+          payload: {},
+          remoteAddress: "10.0.0.10",
+        });
+
+        expect(differentClientResponse.statusCode).toBe(400);
+      } finally {
+        await app.close();
+      }
+    });
+  });
+
+  it("does not trust forwarded client IPs unless explicitly configured", async () => {
+    await withTrustProxy(undefined, async () => {
+      const app = buildServer();
+
+      try {
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+          const response = await app.inject({
+            method: "POST",
+            url: "/v1/reservations",
+            headers: {
+              "x-forwarded-for": "203.0.113.30",
+            },
+            payload: {},
+            remoteAddress: "10.0.0.20",
+          });
+
+          expect(response.statusCode).toBe(400);
+        }
+
+        const sameProxyResponse = await app.inject({
+          method: "POST",
+          url: "/v1/reservations",
+          headers: {
+            "x-forwarded-for": "203.0.113.31",
+          },
+          payload: {},
+          remoteAddress: "10.0.0.20",
+        });
+
+        expect(sameProxyResponse.statusCode).toBe(429);
+      } finally {
+        await app.close();
+      }
+    });
   });
 
   it("does not expose reservation email lookups through query strings", async () => {

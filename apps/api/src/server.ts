@@ -34,6 +34,7 @@ export function buildServer() {
     logger: {
       level: process.env.LOG_LEVEL ?? "info",
     },
+    trustProxy: process.env.TRUST_PROXY === "true",
   });
   const rateLimiter = createRateLimiter();
   const corsOrigins = parseCorsOrigins(process.env.CORS_ORIGINS);
