@@ -1,6 +1,33 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #f6f3ee;
+  --color-paper: #fffdf8;
+  --color-ink: #1f2933;
+  --color-mist: #dbe8e5;
+  --color-teal: #2f6f68;
+  --color-teal-dark: #245752;
+  --color-clay: #a65f43;
+  --color-clay-dark: #854c35;
+  --color-gold: #c6943f;
+  --color-gold-light: #d8ab58;
+  --color-gold-dark: #926d2e;
+  --color-orange: #df7907;
+  --color-orange-dark: #c86903;
+  --color-orange-soft: #f6eadc;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
 
 html,
 body,

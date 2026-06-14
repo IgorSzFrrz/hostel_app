@@ -5,7 +5,7 @@ stay consistent across sessions.
 
 ## Layout
 
-- pnpm monorepo with `apps/web`, `apps/api`, `packages/shared`.
+- Bun workspace monorepo with `apps/web`, `apps/api`, `packages/shared`.
 - TS strict mode, `noUncheckedIndexedAccess` enabled.
 - Shared Zod schemas in `packages/shared` are the single source of truth for
   request/response shapes and form validation.

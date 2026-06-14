@@ -6,23 +6,21 @@ Fastify API, Postgres database. Multilingual (PT/EN/ES), multi-currency
 
 ## Stack
 
-- Frontend: React 18, TypeScript, Vite, Tailwind, GSAP, TanStack Router/Query
+- Frontend: React 18, TypeScript, Vite, Tailwind 4, GSAP, TanStack Router/Query
 - Backend: Fastify, TypeScript, Prisma, PostgreSQL
-- Tooling: pnpm workspaces, ESLint, Prettier, Husky, Vitest, Playwright
+- Tooling: Bun workspaces, ESLint, Prettier, Husky, Vitest, Playwright
 
 ## Quickstart
 
-Requires Node 20+ and Docker.
+Requires Bun 1.3+, Node 20+ and Docker.
 
 ```bash
-corepack enable
-corepack prepare pnpm@9.12.0 --activate
-pnpm install
+bun install
 Copy-Item apps/api/.env.example apps/api/.env
 docker compose up -d
-pnpm --filter @hostel/api db:migrate
-pnpm --filter @hostel/api db:seed
-pnpm dev
+bun run --filter @hostel/api db:migrate
+bun run --filter @hostel/api db:seed
+bun run dev
 ```
 
 - Web: http://localhost:5173
@@ -50,10 +48,10 @@ Initial public endpoints:
 Database commands:
 
 ```bash
-pnpm --filter @hostel/api db:generate
-pnpm --filter @hostel/api db:validate
-pnpm --filter @hostel/api db:migrate
-pnpm --filter @hostel/api db:seed
+bun run --filter @hostel/api db:generate
+bun run --filter @hostel/api db:validate
+bun run --filter @hostel/api db:migrate
+bun run --filter @hostel/api db:seed
 ```
 
 ## Repo Layout
@@ -64,12 +62,8 @@ apps/
   api/       Fastify backend
 packages/
   shared/    Zod schemas + shared types
-docs/
-  superpowers/specs/   Design specs
-  superpowers/plans/   Implementation plans
 ```
 
 ## Status
 
-Foundation scaffolded. See `docs/superpowers/plans/` for the implementation
-roadmap.
+Foundation scaffolded.
